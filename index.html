@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <!--<meta http-equiv="refresh" content="2"> -->
+    <meta charset="utf-8">
+    <title>My Trends</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+                                   <link rel="shortcut icon" href="../assets/ico/favicon.png">
+								   
+   <script type="text/javascript">
+   setInterval(function(){ 
+		//run every 10 seconds.
+		var refresh = document.getElementById('frame1');
+		refresh.src = 'graph1.html';
+		var refresh = document.getElementById('frame2');
+		refresh.src = 'graph2.html';
+		var refresh = document.getElementById('frame3');
+		refresh.src = 'graph3.html';
+		
+	}, 10000);
+    
+    </script>
+	
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">CUTC 2013</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li class="divider"></li>
+                  <li class="nav-header">Nav header</li>
+                  <li><a href="#">Separated link</a></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            <form class="navbar-form pull-right">
+              <input class="span2" type="text" placeholder="Email">
+              <input class="span2" type="password" placeholder="Password">
+              <button type="submit" class="btn">Sign in</button>
+            </form>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div align="middle">
+        <h1 style="font-size:120px"><br>My Trends</h1>
+		<br>
+		<p><br>Tell me what interests you.</p>
+		
+		<table>
+		<tr>
+			<td>
+			<form class="form-search" action="addHashtag.php" method="get">
+				<input type="text" class="input-medium search-query" name="fname">
+				<input type="submit" class="btn btn-primary btn-medium" href="#" value="Add">
+			</form>
+			</td>
+			<td>
+			<form>
+				<input type="submit" class="btn btn-danger btn-medium" href="#" value="Reset">
+			</form>
+			</td>
+		</tr>
+		</table>
+		<!---
+		<a class="tag"><?php echo $var ?></a>
+		<a class="tag">Canucks </a>
+		-->
+      </div>
+
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="text-center"> 
+		  <h3> Trending Tweets </h3>
+		  <iframe  id="frame1" src="graph1.html" width="960" height="455" frameborder="0" scrolling="no">
+		  </iframe>
+		  <h3> Bubble Recommendations </h3>
+		  <iframe  id="frame2" src="graph2.html" width="960" height="455" frameborder="0" scrolling="no">
+		  </iframe>
+		  <h3> Tweet Sentimentality </h3>
+		  <iframe  id="frame3" src="graph3.html" width="960" height="600" frameborder="0" scrolling="no">
+		  </iframe>
+		  <!--<input type="button" value="click" onclick="f()" /> -->
+        </div>
+	</div>
+
+      <hr>
+
+      <footer>
+        <p align="center">Po Liu | Charles Changmin Han | Akash Peri</p>
+      </footer>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../assets/js/jquery.js"></script>
+    <script src="../assets/js/bootstrap-transition.js"></script>
+    <script src="../assets/js/bootstrap-alert.js"></script>
+    <script src="../assets/js/bootstrap-modal.js"></script>
+    <script src="../assets/js/bootstrap-dropdown.js"></script>
+    <script src="../assets/js/bootstrap-scrollspy.js"></script>
+    <script src="../assets/js/bootstrap-tab.js"></script>
+    <script src="../assets/js/bootstrap-tooltip.js"></script>
+    <script src="../assets/js/bootstrap-popover.js"></script>
+    <script src="../assets/js/bootstrap-button.js"></script>
+    <script src="../assets/js/bootstrap-collapse.js"></script>
+    <script src="../assets/js/bootstrap-carousel.js"></script>
+    <script src="../assets/js/bootstrap-typeahead.js"></script>
+
+  </body>
+</html>

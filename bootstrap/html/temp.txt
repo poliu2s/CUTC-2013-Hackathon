@@ -1,0 +1,6 @@
+date	weekend	cinco
+20111001	0	0
+date	weekend	cinco
+20111001	0	0
+20111002	179	27
+20111003	384	50
