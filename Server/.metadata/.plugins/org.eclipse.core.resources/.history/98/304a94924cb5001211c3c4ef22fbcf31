@@ -1,0 +1,191 @@
+package com.server.stream.setup;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import twitter4j.FilterQuery;
+import twitter4j.Query;
+import twitter4j.QueryResult;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
+import twitter4j.conf.ConfigurationBuilder;
+
+public class StreamSetup
+{
+	
+	Date startDate;
+	int currentPosition = 0;
+	int datePos = 20111001;
+	
+	public static void main(String[] args) throws Exception 
+	{
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+
+		/*
+		Twitter twitter = TwitterFactory.getSingleton();
+	    Query query = new Query("canucks");
+	    QueryResult result = twitter.search(query);
+	    for (Status status : result.getTweets()) {
+	        System.out.println("@" + status.getUser().getScreenName() + ":" + status.getText());
+	    }
+	    */
+		
+		String[] args2 = {"canucks"};
+		StreamSetup temp = new StreamSetup();
+		temp.setUpTimer("", "", "onomatopeia");
+	}
+	
+	public int temp(String search)
+	{		
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		  .setOAuthConsumerKey("7mJpjJYHM8LsgrQyQqTaAA")
+		  .setOAuthConsumerSecret("7UcZWVl0IHHH232YRrSWTfDQZmk8scMtj6X6eKYQ")
+		  .setOAuthAccessToken("370497128-2Nu9Nmzzuy6R3TtYeVpQbiXrJ19KFo7HPribn0dp")
+		  .setOAuthAccessTokenSecret("XTDmoz6kHUlF1cdthEHUjobb0DGTddVzylNQfLCo");
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		Twitter twitter = tf.getInstance();
+		
+		int count = 0;
+		
+		try {
+            Query query = new Query(search);
+            query.setSince("2013-05-04");
+            query.setResultType(query.RECENT);
+            QueryResult result;
+            do {
+                result = twitter.search(query);
+                List<Status> tweets = result.getTweets();
+                for (Status tweet : tweets) 
+                {
+//                    System.out.println("@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
+                    long createdAt = tweet.getCreatedAt().getTime();
+                    if(createdAt - startDate.getTime() < 1000*60)
+                    {
+                    	count++;
+                    	if(count%100 == 0)
+                    		System.out.println(count);
+                    }
+                }
+            } while ((query = result.nextQuery()) != null);
+            System.exit(0);
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            System.out.println("Failed to search tweets: " + te.getMessage());
+            System.exit(-1);
+        }
+		return count;
+    }
+	
+	public int temp2(String[] search)
+	{
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		  .setOAuthConsumerKey("7mJpjJYHM8LsgrQyQqTaAA")
+		  .setOAuthConsumerSecret("7UcZWVl0IHHH232YRrSWTfDQZmk8scMtj6X6eKYQ")
+		  .setOAuthAccessToken("370497128-2Nu9Nmzzuy6R3TtYeVpQbiXrJ19KFo7HPribn0dp")
+		  .setOAuthAccessTokenSecret("XTDmoz6kHUlF1cdthEHUjobb0DGTddVzylNQfLCo");
+		TwitterStreamFactory tf = new TwitterStreamFactory(cb.build());
+		TwitterStream twitter = tf.getInstance();
+		
+		int count = 0;
+		
+		try {
+			FilterQuery query = new FilterQuery();
+			query.track(search);
+            //Query query = new Query(search);
+            query.setResultType(query.RECENT);
+            QueryResult result;
+            do {
+                result = twitter.search(query);
+                List<Status> tweets = result.getTweets();
+                for (Status tweet : tweets) 
+                {
+//                    System.out.println("@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
+                    long createdAt = tweet.getCreatedAt().getTime();
+                    if(createdAt - startDate.getTime() < 1000*60)
+                    {
+                    	count++;
+                    	if(count%100 == 0)
+                    		System.out.println(count);
+                    }
+                }
+            } while ((query = result.nextQuery()) != null);
+            System.exit(0);
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            System.out.println("Failed to search tweets: " + te.getMessage());
+            System.exit(-1);
+        }
+		return count;
+	
+		return 0;
+	}
+	
+	public void setUpTimer(String userName, String tag, String search)
+	{
+		Timer timer = new Timer();
+		startDate = GregorianCalendar.getInstance().getTime();
+		timer.scheduleAtFixedRate(new TempTimerClass(search), 0, 60000);
+	}
+	
+	public void writeToTestFile(String userName, String tag, String date, String count)
+	{
+		try {
+			 
+			//File file = new File(System.getProperty("user.dir") + userName + "-" + tag + ".txt");
+			File file = new File(System.getProperty("user.dir") + "temp.txt");
+			System.out.println(System.getProperty("user.dir"));
+ 
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+ 
+			FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			String content = date + "\r" + count + "\n";
+			bw.write(content);
+			bw.close();
+ 
+			System.out.println("Done");
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private class TempTimerClass extends TimerTask
+	{
+		String search;
+		
+		public TempTimerClass(String search)
+		{
+			this.search = search;
+		}
+		@Override
+		public void run() {
+			currentPosition++;
+			int count = temp(search);
+			writeToTestFile("", "", datePos++ + "", count + "");
+		}
+		
+	}
+	
+}

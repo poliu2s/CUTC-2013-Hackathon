@@ -1,0 +1,408 @@
+package com.server.stream.setup;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import twitter4j.FilterQuery;
+import twitter4j.StallWarning;
+import twitter4j.Status;
+import twitter4j.StatusDeletionNotice;
+import twitter4j.StatusListener;
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
+import twitter4j.conf.ConfigurationBuilder;
+
+public class StreamSetup
+{
+	
+	Date startDate;
+	int currentPosition = 0;
+	int datePos = 20111001;
+	int count = 0;
+	
+	String[] searchTerms = null;
+	int[] searchTermCount = null;
+	boolean needToRestartStream = false;
+	TwitterStream twitter;
+	
+	
+	public static void main(String[] args) throws Exception 
+	{
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+
+		/*
+		Twitter twitter = TwitterFactory.getSingleton();
+	    Query query = new Query("canucks");
+	    QueryResult result = twitter.search(query);
+	    for (Status status : result.getTweets()) {
+	        System.out.println("@" + status.getUser().getScreenName() + ":" + status.getText());
+	    }
+	    */
+		
+		StreamSetup temp = new StreamSetup();
+		
+		temp.init();
+		temp.writeHeaderToTestFile();
+		temp.startTwitterStream();
+		temp.setUpTimer("", "", "canucks");
+	}
+	
+	public void init()
+	{
+		ArrayList<String> list = readFromHashtagClass();
+		Object[] temp = list.toArray();
+		searchTerms = new String[list.size()];
+		for(int j = 0; j < list.size(); j++)
+		{
+			searchTerms[j] = (String) temp[j];
+		}
+		searchTermCount = new int[searchTerms.length];
+	}
+	
+	/*
+	public int temp(String search)
+	{		
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		  .setOAuthConsumerKey("7mJpjJYHM8LsgrQyQqTaAA")
+		  .setOAuthConsumerSecret("7UcZWVl0IHHH232YRrSWTfDQZmk8scMtj6X6eKYQ")
+		  .setOAuthAccessToken("370497128-2Nu9Nmzzuy6R3TtYeVpQbiXrJ19KFo7HPribn0dp")
+		  .setOAuthAccessTokenSecret("XTDmoz6kHUlF1cdthEHUjobb0DGTddVzylNQfLCo");
+		
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		Twitter twitter = tf.getInstance();
+		
+		int count = 0;
+		
+		try {
+            Query query = new Query(search);
+            query.setSince("2013-05-04");
+            query.setResultType(query.RECENT);
+            QueryResult result;
+            do {
+                result = twitter.search(query);
+                List<Status> tweets = result.getTweets();
+                for (Status tweet : tweets) 
+                {
+//                    System.out.println("@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
+                    long createdAt = tweet.getCreatedAt().getTime();
+                    if(createdAt - startDate.getTime() < 1000*60)
+                    {
+                    	count++;
+                    	if(count%100 == 0)
+                    		System.out.println(count);
+                    }
+                }
+            } while ((query = result.nextQuery()) != null);
+            System.exit(0);
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            System.out.println("Failed to search tweets: " + te.getMessage());
+            System.exit(-1);
+        }
+		return count;
+    }
+	*/
+	
+	public void startTwitterStream()
+	{
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		  .setOAuthConsumerKey("7mJpjJYHM8LsgrQyQqTaAA")
+		  .setOAuthConsumerSecret("7UcZWVl0IHHH232YRrSWTfDQZmk8scMtj6X6eKYQ")
+		  .setOAuthAccessToken("370497128-2Nu9Nmzzuy6R3TtYeVpQbiXrJ19KFo7HPribn0dp")
+		  .setOAuthAccessTokenSecret("XTDmoz6kHUlF1cdthEHUjobb0DGTddVzylNQfLCo");
+		
+		
+		TwitterStreamFactory tf = new TwitterStreamFactory(cb.build());
+		
+		twitter = tf.getInstance();
+		twitter.addListener(new StreamStatusListener());
+		FilterQuery query = new FilterQuery();
+		System.out.println(searchTerms);
+		query.track(searchTerms);
+		twitter.filter(query);
+	}
+	
+	public void stopTwitterStream()
+	{
+		if(twitter != null)
+		{
+			twitter.cleanUp();
+			twitter.shutdown();
+		}
+	}
+	
+	public void resetTwitterStream()
+	{
+		stopTwitterStream();
+		startTwitterStream();
+	}
+	
+	public void setUpTimer(String userName, String tag, String search)
+	{
+		Timer timer = new Timer();
+		startDate = GregorianCalendar.getInstance().getTime();
+		timer.scheduleAtFixedRate(new WriteCountsTimerClass(), 0, 60000);
+		Timer timer2 = new Timer();
+		timer2.scheduleAtFixedRate(new CheckUpdatesTimerClass(), 0, 15000);
+	}
+	
+	public void writeHeaderToTestFile()
+	{
+		try {
+			 
+			//File file = new File(System.getProperty("user.dir") + userName + "-" + tag + ".txt");
+			File file = new File(System.getProperty("user.dir") + "/temp.txt");
+			System.out.println(System.getProperty("user.dir"));
+ 
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			String content = "date";
+			for(int j = 0; j < searchTerms.length; j++)
+			{
+				content = content + "\t" + searchTerms[j];
+			}
+			bw.write(content);
+			bw.newLine();
+			bw.close();
+ 
+			System.out.println("Done");
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void updateHeaderOfTestFile()
+	{
+		try {
+			 
+			//File file = new File(System.getProperty("user.dir") + userName + "-" + tag + ".txt");
+			File file = new File(System.getProperty("user.dir") + "/temp.txt");
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			String content = "date";
+			for(int j = 0; j < searchTerms.length; j++)
+			{
+				content = content + "\t" + searchTerms[j];
+			}
+			bw.write(content);
+			bw.newLine();
+			bw.close();
+ 
+			System.out.println("Done");
+ 
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeDataToTestFile(String date, String count)
+	{
+		try {
+			 
+			//File file = new File(System.getProperty("user.dir") + userName + "-" + tag + ".txt");
+			File file = new File(System.getProperty("user.dir") + "/temp.txt");
+			System.out.println(System.getProperty("user.dir"));
+ 
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			if(count==null)
+				count = "";
+			FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			String content = date;
+			
+			for(int j = 0; j < searchTermCount.length; j++)
+			{
+				content = content + "\t" + searchTermCount[j];
+			}
+			bw.write(content);
+			bw.newLine();
+			bw.close();
+ 
+			System.out.println("Done");
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*
+	public void writeToTestFile(String userName, String tag, String date, String count)
+	{
+		
+	}
+	*/
+	
+	private class WriteCountsTimerClass extends TimerTask
+	{
+		
+		public WriteCountsTimerClass()
+		{
+			super();
+		}
+		@Override
+		public void run() {
+			currentPosition++;
+			writeDataToTestFile(datePos++ + "", count + "");
+			count = 0;
+		}
+	}
+	
+	private class CheckUpdatesTimerClass extends TimerTask
+	{
+		public CheckUpdatesTimerClass()
+		{
+			super();
+		}
+		@Override
+		public void run() {
+			checkForUpdates();
+		}
+	}
+	
+	private class StreamStatusListener implements StatusListener
+	{
+		public StreamStatusListener()
+		{
+			super();
+		}
+		
+		public void onStatus(Status status) {
+			String text = status.getText();
+			for(int j = 0; j < searchTermCount.length; j++)
+			{
+				String delimiter = searchTerms[j];
+				if(text.contains(delimiter))
+				{
+					searchTermCount[j]++;
+				}
+			}
+			
+        	count++;
+            System.out.println(status.getUser().getName() + " : " + status.getText());
+            if(needToRestartStream)
+            {
+            	resetTwitterStream();
+            }
+        }
+        public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
+        	System.out.println("something happened");
+        }
+        public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
+        	System.out.println("something happened");
+        }
+        public void onException(Exception ex) {
+            ex.printStackTrace();
+        }
+		public void onScrubGeo(long arg0, long arg1) {
+			System.out.println("something happened");
+		}
+		public void onStallWarning(StallWarning arg0) {
+			System.out.println("something happened");
+		}
+	}
+	
+	public void checkForUpdates()
+	{
+		try {
+			 
+			//File file = new File(System.getProperty("user.dir") + userName + "-" + tag + ".txt");
+			File file = new File(System.getProperty("user.dir") + "/hashtags.txt");
+			System.out.println(System.getProperty("user.dir"));
+ 
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			
+			FileReader fr = new FileReader(file.getAbsoluteFile());
+			BufferedReader br = new BufferedReader(fr);
+			ArrayList<String> list = null;
+			if(br.readLine() == "1")
+			{
+				list = readFromHashtagClass();
+				FileWriter fw = new FileWriter(file.getAbsoluteFile(), false);
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write("0");
+				bw.close();
+				fw.close();
+			}
+			br.close();
+			fr.close();
+			
+			if(list != null)
+			{
+				Object[] temp = list.toArray();
+				searchTerms = new String[list.size()];
+				for(int j = 0; j < list.size(); j++)
+				{
+					searchTerms[j] = (String) temp[j];
+				}
+				searchTermCount = new int[searchTerms.length];
+				needToRestartStream = true;
+				updateHeaderOfTestFile();
+			}
+			
+			System.out.println("Done");
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	
+	}
+	
+	public ArrayList<String> readFromHashtagClass()
+	{
+		ArrayList<String> list = null;
+		try
+		{
+			File file = new File(System.getProperty("user.dir") + "/hashtags.txt");
+			FileReader fr = new FileReader(file.getAbsoluteFile());
+			BufferedReader br = new BufferedReader(fr);
+			list = new ArrayList<String>();
+			int count = 0;
+			while(true)
+			{
+				String line = br.readLine();
+				if(line == null)
+				{
+					break;
+				}
+				if(count > 0)
+					list.add(line);
+				count++;
+			}
+			br.close();
+			fr.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+}

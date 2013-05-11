@@ -1,0 +1,101 @@
+package com.server.stream.setup;
+
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
+import twitter4j.Query;
+import twitter4j.QueryResult;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
+import twitter4j.examples.search.*;
+
+public class StreamSetup
+{
+	public static void main(String[] args) throws Exception 
+	{
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		/*
+	    try {
+
+
+	        httpclient.getCredentialsProvider().setCredentials(
+	        		AuthScope.ANY,
+	                //new AuthScope("https://stream.twitter.com", 443),
+	                new UsernamePasswordCredentials("blackhole1a1a", "minotaur7"));
+
+	        HttpGet httpget = new HttpGet("https://stream.twitter.com/1.1/statuses/filter.json?track=canucks:");
+	        HttpPost httpPost = new HttpPost();
+
+	        System.out.println("executing request" + httpget.getRequestLine());
+	        HttpResponse response = httpclient.execute(httpget);
+	        HttpEntity entity = response.getEntity();
+
+	        System.out.println("----------------------------------------");
+	        System.out.println(response.getStatusLine());
+	        if (entity != null) {
+	            System.out.println("Response content length: " + entity.getContentLength());
+	        }
+	        EntityUtils.consume(entity);
+	    } finally {
+	        httpclient.getConnectionManager().shutdown();
+	    }
+	    */
+		/*
+		Twitter twitter = TwitterFactory.getSingleton();
+	    Query query = new Query("canucks");
+	    QueryResult result = twitter.search(query);
+	    for (Status status : result.getTweets()) {
+	        System.out.println("@" + status.getUser().getScreenName() + ":" + status.getText());
+	    }
+	    */
+		
+		String[] args2 = {"canucks"};
+		StreamSetup.temp(args2);
+	}
+	
+	public static void temp(String[] args)
+	{
+		if (args.length < 1) {
+            System.out.println("java twitter4j.examples.search.SearchTweets [query]");
+            System.exit(-1);
+        }
+		
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		  .setOAuthConsumerKey("7mJpjJYHM8LsgrQyQqTaAA")
+		  .setOAuthConsumerSecret("7UcZWVl0IHHH232YRrSWTfDQZmk8scMtj6X6eKYQ")
+		  .setOAuthAccessToken("2Nu9Nmzzuy6R3TtYeVpQbiXrJ19KFo7HPribn0dp")
+		  .setOAuthAccessTokenSecret("XTDmoz6kHUlF1cdthEHUjobb0DGTddVzylNQfLCo");
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		Twitter twitter = tf.getInstance();
+		
+		try {
+            Query query = new Query(args[0]);
+            QueryResult result;
+            do {
+                result = twitter.search(query);
+                List<Status> tweets = result.getTweets();
+                for (Status tweet : tweets) {
+                    System.out.println("@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
+                }
+            } while ((query = result.nextQuery()) != null);
+            System.exit(0);
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            System.out.println("Failed to search tweets: " + te.getMessage());
+            System.exit(-1);
+        }
+    }
+	
+}
