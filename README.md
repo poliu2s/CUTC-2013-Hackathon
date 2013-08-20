@@ -1,4 +1,4 @@
-CUTC2013 - My Trends Web App
+My Trends Webapp
 ============================
 
 This is a personalize Twitter trend visualizer web application that I built for the Canadian Undergraduate Technology Conference 2013 Hackathon.
